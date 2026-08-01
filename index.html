@@ -357,10 +357,17 @@
     font-size:0.75rem; letter-spacing:0.35em; text-transform:uppercase;
     color:var(--gold); margin-bottom:22px;
   }
+  .occasion-badges{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    margin-bottom:16px;
+  }
+  .occasion-badges:empty{ display:none; }
   .occasion-badge{
     display:inline-block;
     padding:8px 22px;
-    margin-bottom:26px;
     border:1px solid rgba(224,168,176,0.4);
     border-radius:999px;
     font-family:'Cormorant Garamond';
@@ -627,7 +634,7 @@
 <div id="main">
 
   <section id="hero">
-    <div class="occasion-badge fade-up">❤ Muchas felicidades en tu Día de la Novia ❤</div>
+    <div class="occasion-badges fade-up" id="occasion-badges"></div>
     <div class="hero-eyebrow fade-up">para</div>
     <h1 class="hero-name fade-up">Ana Gabriel<br><em>Dotel Vargas</em></h1>
     <p class="hero-sub fade-up">Esto no es una página cualquiera. Es un lugar hecho solo para ti, con las cosas que quiero que sepas.</p>
@@ -652,6 +659,7 @@
       <div class="counter-item"><div class="num" id="c-days">0</div><div class="lbl">días</div></div>
       <div class="counter-item"><div class="num" id="c-hours">0</div><div class="lbl">horas</div></div>
       <div class="counter-item"><div class="num" id="c-min">0</div><div class="lbl">minutos</div></div>
+      <div class="counter-item"><div class="num" id="c-sec">0</div><div class="lbl">segundos</div></div>
     </div>
   </section>
 
@@ -680,9 +688,7 @@
 <canvas id="fireworks"></canvas>
 
 <button id="music-toggle" title="Reproducir música">♪</button>
-<audio id="bg-music" preload="none">
-  <source src="cancion.mp3" type="audio/mpeg">
-</audio>
+<audio id="bg-music" preload="none"></audio>
 
 <script>
 /* ============================================================
@@ -697,7 +703,13 @@ const CONFIG = {
   PHOTO_PREFIX: "foto",
   PHOTO_EXT: ".jpg",
   START_DATE: "2026-04-21T00:00:00", // fecha en que empezaron ustedes — activa el contador "Juntos hace"
-  SONG_FILE: "cancion.mp3"   // sube un archivo con este nombre junto al index.html para activar la música
+  SONG_FILE: "musica.mp3",   // el nombre real del archivo que subiste junto al index.html
+
+  // Días especiales: se repiten cada año en ese mes/día (no hace falta cambiar el año).
+  // Agrega los que quieras con el mismo formato { month, day, message }.
+  SPECIAL_DAYS: [
+    { month: 8, day: 1, message: "❤ Muchas felicidades en tu Día de la Novia ❤" }
+  ]
 };
 
 /* ---------------- estrellas ---------------- */
@@ -884,6 +896,7 @@ function unlockMain(){
     initGallery();
     initCounter();
     initScrollReveal();
+    initSpecialDay();
   }, 700);
 }
 
@@ -964,12 +977,28 @@ function initCounter(){
     const days = Math.floor(diff/86400000);
     const hours = Math.floor((diff%86400000)/3600000);
     const min = Math.floor((diff%3600000)/60000);
+    const sec = Math.floor((diff%60000)/1000);
     document.getElementById('c-days').textContent = days;
     document.getElementById('c-hours').textContent = hours;
     document.getElementById('c-min').textContent = min;
+    document.getElementById('c-sec').textContent = sec;
   }
   tick();
-  setInterval(tick, 60000);
+  setInterval(tick, 1000);
+}
+
+/* ---------------- días especiales ---------------- */
+function initSpecialDay(){
+  const container = document.getElementById('occasion-badges');
+  const today = new Date();
+  const matches = CONFIG.SPECIAL_DAYS.filter(d => d.month === today.getMonth()+1 && d.day === today.getDate());
+  container.innerHTML = '';
+  matches.forEach(m=>{
+    const badge = document.createElement('div');
+    badge.className = 'occasion-badge';
+    badge.textContent = m.message;
+    container.appendChild(badge);
+  });
 }
 
 /* ---------------- scroll reveal ---------------- */
@@ -984,6 +1013,7 @@ function initScrollReveal(){
 /* ---------------- música ---------------- */
 const musicBtn = document.getElementById('music-toggle');
 const music = document.getElementById('bg-music');
+music.src = CONFIG.SONG_FILE;
 let playing = false;
 musicBtn.addEventListener('click', ()=>{
   if(!playing){
