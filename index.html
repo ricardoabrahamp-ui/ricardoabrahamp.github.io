@@ -217,6 +217,113 @@
     cursor:pointer;
   }
 
+  .attempts-note{
+    margin-top:16px;
+    font-size:0.72rem;
+    color:var(--wine);
+    opacity:0.85;
+    min-height:1em;
+  }
+
+  .admin-link{
+    margin-top:34px;
+    font-size:0.62rem;
+    letter-spacing:0.15em;
+    text-transform:uppercase;
+    color:rgba(243,233,221,0.18);
+    cursor:pointer;
+    user-select:none;
+  }
+  .admin-link:hover{ color:rgba(243,233,221,0.4); }
+
+  /* ---------- panel admin ---------- */
+  #admin-panel{
+    position:fixed; inset:0;
+    z-index:200;
+    display:none;
+    align-items:center; justify-content:center;
+    background:rgba(6,5,11,0.82);
+    backdrop-filter:blur(3px);
+  }
+  #admin-panel.show{ display:flex; }
+
+  .admin-card{
+    position:relative;
+    width:min(88vw, 340px);
+    background:var(--bg-mid);
+    border:1px solid rgba(201,161,90,0.35);
+    border-radius:8px;
+    padding:38px 28px;
+    text-align:center;
+  }
+
+  .admin-close{
+    position:absolute; top:12px; right:14px;
+    cursor:pointer;
+    color:var(--cream-dim);
+    font-size:0.9rem;
+    opacity:0.6;
+  }
+  .admin-close:hover{ opacity:1; }
+
+  #admin-code-input, #admin-new-code, #admin-extra-attempts{
+    width:100%;
+    background:rgba(243,233,221,0.06);
+    border:1px solid rgba(201,161,90,0.3);
+    border-radius:4px;
+    padding:10px 12px;
+    color:var(--cream);
+    font-family:'Jost';
+    font-size:0.95rem;
+    text-align:center;
+    margin-top:14px;
+  }
+  #admin-code-input:focus, #admin-new-code:focus, #admin-extra-attempts:focus{
+    outline:none; border-color:var(--gold);
+  }
+
+  .admin-row{
+    display:flex; gap:8px; align-items:stretch;
+  }
+  .admin-row input{ margin-top:0; flex:1; }
+
+  .admin-btn{
+    margin-top:14px;
+    padding:10px 18px;
+    border:1px solid var(--gold);
+    border-radius:4px;
+    background:transparent;
+    color:var(--gold);
+    font-family:'Jost'; font-size:0.8rem; letter-spacing:0.08em; text-transform:uppercase;
+    cursor:pointer;
+    transition:background 0.25s ease, color 0.25s ease;
+  }
+  .admin-row .admin-btn{ margin-top:0; white-space:nowrap; }
+  .admin-btn:hover{ background:var(--gold); color:var(--bg-deep); }
+
+  .admin-error{
+    margin-top:12px;
+    font-size:0.75rem;
+    color:var(--wine);
+    min-height:1em;
+  }
+
+  .admin-note{
+    margin-top:14px;
+    font-size:0.68rem;
+    line-height:1.5;
+    color:var(--cream-dim);
+    opacity:0.7;
+    text-align:left;
+  }
+
+  .admin-status{
+    margin-top:14px;
+    font-size:0.75rem;
+    color:var(--rose);
+    min-height:1em;
+  }
+
   /* ============================================================
      CONTENIDO PRINCIPAL
      ============================================================ */
@@ -249,6 +356,18 @@
   .hero-eyebrow{
     font-size:0.75rem; letter-spacing:0.35em; text-transform:uppercase;
     color:var(--gold); margin-bottom:22px;
+  }
+  .occasion-badge{
+    display:inline-block;
+    padding:8px 22px;
+    margin-bottom:26px;
+    border:1px solid rgba(224,168,176,0.4);
+    border-radius:999px;
+    font-family:'Cormorant Garamond';
+    font-style:italic;
+    font-size:1rem;
+    color:var(--rose);
+    background:rgba(224,168,176,0.06);
   }
   .hero-name{
     font-size:clamp(2.6rem, 9vw, 4.6rem);
@@ -463,6 +582,44 @@
     <div class="dots" id="dots"></div>
     <input type="tel" id="pin-input" inputmode="numeric" autocomplete="off">
     <div class="lock-note" id="lock-note" onclick="document.getElementById('pin-input').focus()">tocar aquí para escribir</div>
+    <div class="attempts-note" id="attempts-note"></div>
+    <div class="admin-link" id="admin-link">modo admin</div>
+  </div>
+</div>
+
+<!-- ===================== PANEL ADMIN (oculto, solo para ti) ===================== -->
+<div id="admin-panel">
+  <div class="admin-card">
+    <div class="admin-close" id="admin-close">✕</div>
+
+    <div id="admin-step-auth">
+      <div class="lock-label">Panel admin</div>
+      <input type="password" id="admin-code-input" placeholder="Tu código" autocomplete="off">
+      <button class="admin-btn" id="admin-auth-btn">Entrar</button>
+      <div class="admin-error" id="admin-error"></div>
+    </div>
+
+    <div id="admin-step-controls" style="display:none;">
+      <div class="lock-label">Dar más intentos</div>
+      <div class="admin-row">
+        <input type="number" id="admin-extra-attempts" min="1" placeholder="Cantidad" value="5">
+        <button class="admin-btn" id="admin-grant-btn">Dar</button>
+      </div>
+
+      <div class="lock-label" style="margin-top:26px;">Cambiar su contraseña</div>
+      <div class="admin-row">
+        <input type="text" id="admin-new-code" inputmode="numeric" placeholder="Nuevo código">
+        <button class="admin-btn" id="admin-setcode-btn">Guardar</button>
+      </div>
+      <div class="admin-note">Este cambio solo aplica en este navegador/dispositivo. Si ella entra desde otro celular, seguirá pidiendo el código original a menos que también lo cambies en el archivo y lo vuelvas a subir.</div>
+
+      <div class="lock-label" style="margin-top:26px;">Fotos</div>
+      <div class="admin-note" id="photo-count-note">Detectando fotos...</div>
+      <button class="admin-btn" id="admin-rescan-btn">Volver a revisar</button>
+      <div class="admin-note">Para agregar fotos nuevas para todos (no solo tú): súbelas al repositorio con el siguiente número, ej. <b>foto11.jpg</b>, <b>foto12.jpg</b>. La página las detecta sola en cuanto las subas — no hace falta tocar el código.</div>
+
+      <div class="admin-status" id="admin-status"></div>
+    </div>
   </div>
 </div>
 
@@ -470,6 +627,7 @@
 <div id="main">
 
   <section id="hero">
+    <div class="occasion-badge fade-up">❤ Muchas felicidades en tu Día de la Novia ❤</div>
     <div class="hero-eyebrow fade-up">para</div>
     <h1 class="hero-name fade-up">Ana Gabriel<br><em>Dotel Vargas</em></h1>
     <p class="hero-sub fade-up">Esto no es una página cualquiera. Es un lugar hecho solo para ti, con las cosas que quiero que sepas.</p>
@@ -522,7 +680,7 @@
 <canvas id="fireworks"></canvas>
 
 <button id="music-toggle" title="Reproducir música">♪</button>
-<audio id="bg-music" loop preload="none">
+<audio id="bg-music" preload="none">
   <source src="cancion.mp3" type="audio/mpeg">
 </audio>
 
@@ -532,11 +690,13 @@
    ============================================================ */
 const CONFIG = {
   CODE: "12062005",          // el código que ella debe escribir
-  ADMIN_CODE: "08111996",    // tu código, por si quieres entrar tú a revisar la página
-  PHOTO_COUNT: 10,           // foto1.jpg ... foto10.jpg (ya los tienes subidos)
+  ADMIN_CODE: "08111996",    // tu código, por si quieres entrar tú a revisar la página o abrir el panel admin
+  MAX_ATTEMPTS: 8,           // intentos fallidos permitidos antes de bloquear el campo
+  PHOTO_COUNT: 10,           // ya no se usa para limitar la galería, se detecta sola — se deja como referencia
+  PHOTO_SCAN_MAX: 40,        // hasta qué número revisa (foto1 ... foto40) para detectar cuántas fotos hay realmente
   PHOTO_PREFIX: "foto",
   PHOTO_EXT: ".jpg",
-  START_DATE: null,          // ej: "2024-06-12T00:00:00" para activar el contador. Déjalo en null para ocultarlo.
+  START_DATE: "2026-04-21T00:00:00", // fecha en que empezaron ustedes — activa el contador "Juntos hace"
   SONG_FILE: "cancion.mp3"   // sube un archivo con este nombre junto al index.html para activar la música
 };
 
@@ -598,13 +758,42 @@ function renderDots(){
   dots.forEach((d,i)=> d.classList.toggle('filled', i < pinInput.value.length));
 }
 
+/* ---------------- intentos + contraseña (guardados en este navegador) ---------------- */
+const attemptsNote = document.getElementById('attempts-note');
+
+function getHerCode(){
+  return localStorage.getItem('herCodeOverride') || CONFIG.CODE;
+}
+function getAttemptsLeft(){
+  const stored = localStorage.getItem('attemptsLeft');
+  return stored === null ? CONFIG.MAX_ATTEMPTS : parseInt(stored, 10);
+}
+function setAttemptsLeft(n){
+  localStorage.setItem('attemptsLeft', n);
+  updateAttemptsUI();
+}
+function updateAttemptsUI(){
+  const left = getAttemptsLeft();
+  if(left <= 0){
+    attemptsNote.textContent = 'Se agotaron los intentos.';
+    pinInput.disabled = true;
+    lockNote.textContent = 'campo bloqueado';
+  } else {
+    attemptsNote.textContent = left <= 3 ? `${left} intento(s) restante(s)` : '';
+    pinInput.disabled = false;
+    lockNote.textContent = 'toca aquí para escribir';
+  }
+}
+updateAttemptsUI();
+
 pinInput.addEventListener('input', ()=>{
   pinInput.value = pinInput.value.replace(/\D/g,'').slice(0, PIN_LEN);
   renderDots();
   const val = pinInput.value;
-  if(val === CONFIG.CODE || val === CONFIG.ADMIN_CODE){
+  if(val === getHerCode() || val === CONFIG.ADMIN_CODE){
     unlockMain();
   } else if(val.length === PIN_LEN){
+    setAttemptsLeft(Math.max(getAttemptsLeft() - 1, 0));
     dotsWrap.classList.add('error');
     setTimeout(()=>{
       dotsWrap.classList.remove('error');
@@ -614,6 +803,77 @@ pinInput.addEventListener('input', ()=>{
   }
 });
 lockNote.textContent = 'toca aquí para escribir';
+
+/* ---------------- panel admin ---------------- */
+const adminPanel = document.getElementById('admin-panel');
+const adminLink = document.getElementById('admin-link');
+const adminClose = document.getElementById('admin-close');
+const adminStepAuth = document.getElementById('admin-step-auth');
+const adminStepControls = document.getElementById('admin-step-controls');
+const adminCodeInput = document.getElementById('admin-code-input');
+const adminAuthBtn = document.getElementById('admin-auth-btn');
+const adminError = document.getElementById('admin-error');
+const adminExtraAttempts = document.getElementById('admin-extra-attempts');
+const adminGrantBtn = document.getElementById('admin-grant-btn');
+const adminNewCode = document.getElementById('admin-new-code');
+const adminSetCodeBtn = document.getElementById('admin-setcode-btn');
+const adminStatus = document.getElementById('admin-status');
+const photoCountNote = document.getElementById('photo-count-note');
+const adminRescanBtn = document.getElementById('admin-rescan-btn');
+
+adminLink.addEventListener('click', openAdminPanel);
+function openAdminPanel(){
+  adminPanel.classList.add('show');
+  adminStepAuth.style.display='block';
+  adminStepControls.style.display='none';
+  adminCodeInput.value='';
+  adminError.textContent='';
+  adminStatus.textContent='';
+  adminCodeInput.focus();
+}
+adminClose.addEventListener('click', ()=> adminPanel.classList.remove('show'));
+
+adminAuthBtn.addEventListener('click', ()=>{
+  if(adminCodeInput.value === CONFIG.ADMIN_CODE){
+    adminStepAuth.style.display='none';
+    adminStepControls.style.display='block';
+    adminError.textContent='';
+    updatePhotoCountNote();
+  } else {
+    adminError.textContent='Código incorrecto.';
+  }
+});
+
+async function updatePhotoCountNote(){
+  photoCountNote.textContent = 'Revisando...';
+  const found = await detectPhotos();
+  photoCountNote.textContent = `Fotos detectadas ahora mismo: ${found.length}`;
+}
+
+adminRescanBtn.addEventListener('click', async ()=>{
+  await updatePhotoCountNote();
+  if(document.getElementById('main').classList.contains('show')){
+    await initGallery();
+  }
+  adminStatus.textContent = 'Galería actualizada.';
+});
+
+adminGrantBtn.addEventListener('click', ()=>{
+  const extra = parseInt(adminExtraAttempts.value, 10);
+  if(!extra || extra <= 0) return;
+  setAttemptsLeft(getAttemptsLeft() + extra);
+  pinInput.value='';
+  renderDots();
+  adminStatus.textContent = `Listo: se agregaron ${extra} intentos.`;
+});
+
+adminSetCodeBtn.addEventListener('click', ()=>{
+  const newCode = adminNewCode.value.trim();
+  if(!newCode) return;
+  localStorage.setItem('herCodeOverride', newCode);
+  adminNewCode.value='';
+  adminStatus.textContent = 'Contraseña actualizada en este dispositivo.';
+});
 
 function unlockMain(){
   lock.style.transition='opacity 0.9s ease, visibility 0.9s ease';
@@ -627,14 +887,38 @@ function unlockMain(){
   }, 700);
 }
 
-/* ---------------- galería ---------------- */
-function initGallery(){
-  const track = document.querySelector('.gallery-track');
+/* ---------------- galería (detecta sola cuántas fotos existen) ---------------- */
+function checkPhoto(i){
+  return new Promise(resolve=>{
+    const img = new Image();
+    img.onload = ()=> resolve(i);
+    img.onerror = ()=> resolve(null);
+    img.src = CONFIG.PHOTO_PREFIX + i + CONFIG.PHOTO_EXT;
+  });
+}
+
+async function detectPhotos(){
+  const checks = [];
+  for(let i=1;i<=CONFIG.PHOTO_SCAN_MAX;i++) checks.push(checkPhoto(i));
+  const results = await Promise.all(checks);
+  return results.filter(x=>x!==null);
+}
+
+let galleryState = { current:0, slides:[], nav:null };
+
+async function initGallery(){
+  const gallery = document.getElementById('gallery');
   const nav = document.getElementById('gallery-nav');
+  const found = await detectPhotos();
+  const indexes = found.length ? found : [1]; // si no detecta ninguna, muestra al menos un espacio con corazón
+
+  nav.innerHTML = '';
+  gallery.querySelectorAll('.slide').forEach(s=>s.remove());
+
   const slides = [];
-  for(let i=1;i<=CONFIG.PHOTO_COUNT;i++){
+  indexes.forEach((i, pos)=>{
     const slide = document.createElement('div');
-    slide.className='slide'+(i===1?' active':'');
+    slide.className='slide'+(pos===0?' active':'');
     const img = document.createElement('img');
     img.src = CONFIG.PHOTO_PREFIX + i + CONFIG.PHOTO_EXT;
     img.alt = 'Foto '+i;
@@ -642,27 +926,32 @@ function initGallery(){
       slide.innerHTML = '<div class="placeholder">♡</div>';
     };
     slide.appendChild(img);
-    document.getElementById('gallery').insertBefore(slide, document.querySelector('.gallery-nav'));
+    gallery.insertBefore(slide, document.querySelector('.gallery-nav'));
     slides.push(slide);
 
     const dot = document.createElement('button');
-    if(i===1) dot.className='active';
-    dot.addEventListener('click', ()=>goTo(i-1));
+    if(pos===0) dot.className='active';
+    dot.addEventListener('click', ()=>goToSlide(pos));
     nav.appendChild(dot);
-  }
+  });
 
-  let current = 0;
-  function goTo(i){
-    slides[current].classList.remove('active');
-    nav.children[current].classList.remove('active');
-    current = (i + slides.length) % slides.length;
-    slides[current].classList.add('active');
-    nav.children[current].classList.add('active');
-  }
-  document.getElementById('prev').addEventListener('click', ()=>goTo(current-1));
-  document.getElementById('next').addEventListener('click', ()=>goTo(current+1));
-  setInterval(()=>goTo(current+1), 4500);
+  galleryState = { current:0, slides, nav };
 }
+
+function goToSlide(i){
+  const { current, slides, nav } = galleryState;
+  if(!slides.length) return;
+  slides[current].classList.remove('active');
+  nav.children[current].classList.remove('active');
+  const next = (i + slides.length) % slides.length;
+  slides[next].classList.add('active');
+  nav.children[next].classList.add('active');
+  galleryState.current = next;
+}
+
+document.getElementById('prev').addEventListener('click', ()=> goToSlide(galleryState.current - 1));
+document.getElementById('next').addEventListener('click', ()=> goToSlide(galleryState.current + 1));
+setInterval(()=> goToSlide(galleryState.current + 1), 4500);
 
 /* ---------------- contador ---------------- */
 function initCounter(){
@@ -712,6 +1001,20 @@ musicBtn.addEventListener('click', ()=>{
     musicBtn.classList.remove('spin');
     musicBtn.textContent = '♪';
   }
+});
+
+music.addEventListener('ended', ()=>{
+  musicBtn.classList.remove('spin');
+  musicBtn.textContent = '♪';
+  setTimeout(()=>{
+    if(playing){
+      music.currentTime = 0;
+      music.play().then(()=>{
+        musicBtn.classList.add('spin');
+        musicBtn.textContent = '❚❚';
+      });
+    }
+  }, 10000);
 });
 
 /* ---------------- fuegos artificiales finales ---------------- */
